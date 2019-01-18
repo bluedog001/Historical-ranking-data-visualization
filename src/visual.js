@@ -9,6 +9,14 @@
 // require("./stylesheet.css");
 $('#inputfile').change(function () {
     $('#inputfile').attr('hidden', true);
+    $('#title_1').attr('hidden', true);
+    $('#title_label').attr('hidden', true);
+    $('#Usecount_label').attr('hidden', true);
+    $('#Usecount_1').attr('hidden', true);
+    $('#Usesemi_label').attr('hidden', true);
+    $('#Usesemi_1').attr('hidden', true);
+    $('#Bigval_label').attr('hidden', true);
+    $('#Bigval_1').attr('hidden', true);
     var r = new FileReader();
     r.readAsText(this.files[0], config.encoding);
     r.onload = function () {
@@ -72,6 +80,7 @@ function draw(data) {
         var text_y = config.text_y;
         var itemLabel = config.itemLabel;
         var typeLabel = config.typeLabel;
+        var Title = config.Title;
         // 长度小于display_barInfo的bar将不显示barInfo
         var display_barInfo = config.display_barInfo;
         // 显示类型
@@ -271,6 +280,11 @@ function draw(data) {
                 .attr("class", "growth")
                 .attr("x", 0)
                 .attr("y", text_y).text(itemLabel);
+
+            g.insert("text")
+                .attr("class", "TITLE")
+                .attr("x", 100-Title.length*15)
+                .attr("y", -150).text(Title);
 
             // 右1文字
             g.insert("text")

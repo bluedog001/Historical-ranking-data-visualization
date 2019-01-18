@@ -8,11 +8,6 @@
 body {
     margin: 0px;
 }
-input {
-        position: absolute;   
-        top: 50%;   
-        left: 45%;   
-}
 .domain {
     display: none;
 }
@@ -111,6 +106,12 @@ input {
     fill: rgb(92, 92, 92);
     font-weight: bold;
     font-size: 40pt;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+.TITLE {
+    fill: rgb(92, 92, 92);
+    font-weight: bold;
+    font-size: 30pt;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 /* MIKU色 */

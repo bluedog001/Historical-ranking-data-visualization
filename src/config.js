@@ -1,4 +1,4 @@
-﻿const config = {
+﻿var config = {
   // 数据源的编码方式。
   // 默认为GBK,按需可修改为UTF-8等。
   // 如果输入的数据是用Excel编写的csv文件，那么大概率应该使用GBK。
@@ -34,8 +34,9 @@
   changeable_color: false,
 
   // 附加信息内容。
-  itemLabel: "左侧文字",
-  typeLabel: "右侧文字",
+  itemLabel: "",
+  typeLabel: "",
+  Title: "",
   // 榜首项目信息的水平位置 。
   item_x: 800,
   
@@ -100,3 +101,19 @@
   // 开启匀速动画效果
    animation:'linear',
 };
+function OnInput(event){
+  config.Title = event.target.value;
+}
+
+
+$("input[name='UseCount']").on('click',function(){
+  config.use_counter = $("input[name='UseCount']").is(':checked');
+})
+
+$("input[name='UseSemi']").on('click',function(){
+  config.use_semilogarithmic_coordinate = $("input[name='UseSemi']").is(':checked');
+})
+
+$("input[name='BigVal']").on('click',function(){
+  config.big_value = $("input[name='BigVal']").is(':checked');
+})

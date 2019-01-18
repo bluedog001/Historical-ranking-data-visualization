@@ -50,8 +50,15 @@ body {
 .days {
     fill: rgb(92, 92, 92);
     font-weight: bold;
-    font-size: 55pt;
+    font-size: 30pt;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.count {
+    fill: rgb(92, 92, 92);
+    font-weight: bold;
+    font-size: 20pt;
+    font-family: 'Segoe UI', 'console', Calibri, sans-serif;
 }
 
 .topLabel {

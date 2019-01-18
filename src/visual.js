@@ -294,9 +294,9 @@ function draw(data) {
 
             // 榜首日期计数
             if (use_counter == true) {
-                var days = g.insert("text")
-                    .attr("class", "days")
-                    .attr("x", text_x + offset)
+                var day = g.insert("text")
+                    .attr("class", "count")
+                    .attr("x", 0)
                     .attr("y", text_y);
             }
             // 显示榜首type
@@ -362,9 +362,10 @@ function draw(data) {
                 // 榜首文字
                 topLabel.data(currentData).text(function (d) {
                     if (lastname == d.name) {
-                        counter.value = counter.value + step;
+                        counter.value = counter.value + 1;
                     } else {
                         counter.value = 1;
+                        //console.log(counter.value);
                     }
                     lastname = d.name
                     return d.name;
@@ -373,7 +374,10 @@ function draw(data) {
 
                 if (use_counter == true) {
                     // 榜首持续时间更新
-                    days.data(currentData).transition().duration(3000 * interval_time).ease(d3.easeLinear).tween(
+                    console.log(counter.value);
+                    day.data(currentData).text(function(d){return "连续"+counter.value/step+"天第一"});
+                    /*
+                    day.data(currentData).transition().duration(3000 * interval_time).ease(d3.easeLinear).tween(
                         "text",
                         function (d) {
                             var self = this;
@@ -383,8 +387,9 @@ function draw(data) {
                             return function (t) {
                                 self.textContent = d3.format(format)(Math.round(i(t) * round) / round);
                             };
-                        });
-                } else if (use_type_info == true) {
+                        });*/
+                } 
+                if (use_type_info == true) {
                     // 榜首type更新
                     top_type.data(currentData).text(function (d) {
                         return d['type']
@@ -684,7 +689,7 @@ function draw(data) {
         }, 3000 * interval_time);
         setInterval(() => {
 
-            console.log(currentData);
+            //console.log(currentData);
             d3.transition()
                 .each(change)
         }, 3000 * update_rate * interval_time)

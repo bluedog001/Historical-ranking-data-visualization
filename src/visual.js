@@ -29,6 +29,19 @@ $('#inputfile').change(function () {
         }
     }
 });
+// 色彩由http://tools.medialab.sciences-po.fr/iwanthue/生成
+const colorList = ["#8f9bf2",
+    "#d1b753",
+    "#7f4cc8",
+    "#b5d266",
+    "#e18adc",
+    "#74d37f",
+    "#f27e94",
+    "#55dcba",
+    "#ea9351",
+    "#3bbbf0"];
+var nameToColor = {};
+var isColorUsed = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 function draw(data) {
         var date = [];
@@ -70,7 +83,23 @@ function draw(data) {
             if (d[divide_by] in config.color)
                 return config.color[d[divide_by]]
             else {
-                return d3.schemeCategory10[Math.floor((d[divide_by].charCodeAt() % 10))]
+                if (nameToColor.hasOwnProperty(d[divide_by])) {
+                    return colorList[nameToColor[d[divide_by]]];
+                }
+                let beginId = Math.floor(Math.random() * 10);
+                let colorFound = false;
+                for (let i = beginId; i < beginId + 10; ++i) {
+                    if (isColorUsed[i % 10] == 0) {
+                        nameToColor[d[divide_by]] = i % 10;
+                        isColorUsed[i % 10] = 1;
+                        colorFound = true;
+                        break;
+                    }
+                }
+                if (!colorFound) {
+                    console.error(`Color not Found for data ${d[divide_by]}!`);
+                }
+                return colorList[nameToColor[d[divide_by]]];
             }
         }
 
@@ -462,8 +491,8 @@ function draw(data) {
                 .ease(d3.easeLinear)
                 .call(linexAxis);
             pUpdate();
-            pEnter();
             pExit();
+            pEnter();
             // 此处有bug：两个update都改了d属性（即绑定的数组），但是第二次修改应当在第一个transition结束之后进行，并且修改
             function pUpdate() {
                 var pathUpdate = path.select(".linepath");
@@ -486,6 +515,7 @@ function draw(data) {
                         return line(visibleData[d.name]);
                     })
                     .transition("2").duration(1000 * interval_time)
+                    .attr("opacity", (d, i) => (i == 0) ? 1 : 0.3)
                     .attr("stroke-dashoffset", function (d) {
                         console.log(2);
                         console.log(this.getTotalLength());
@@ -522,20 +552,22 @@ function draw(data) {
                     .attr("opacity", 0)
                     .attr("fill", "none")
                     .transition("2")
-                    .delay(1000 * interval_time)
-                    .duration(990 * interval_time)
-                    .attr("opacity", 1)
+                    .duration(1000 * interval_time)
+                    .attr("opacity", (d, i) => (i == 0) ? 1 : 0.3)
                     .attr("stroke-dashoffset", function (d) {
                         return 100000 - this.getTotalLength();
                     });
             }
             // exit一定要记得remove空的DOM元素
+            // 以及删除颜色对应
             function pExit() {
                 path.exit().select("path")
                     .attr("d", function (d, i) {
                         console.log(d);
                         //if (d.name == "I")
                         //console.log(3);
+                        isColorUsed[nameToColor[d.name]] = 0;
+                        delete nameToColor[d.name];
                         visibleData[d.name].push({date: currentdate, rank: 9});
                         return line(visibleData[d.name]);
                     });

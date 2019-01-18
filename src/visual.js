@@ -105,10 +105,13 @@ function draw(data) {
         };
 
         var enter_from_0 = config.enter_from_0;
+        // 时间窗口大小
+        var timeWindowSize = 5;
         interval_time /= 3;
         var lastData = [];
         var currentdate = time[0].toString();
         var currentData = [];
+        var visibleData = {};
         var lastname;
         const svg = d3.select('svg');
 
@@ -124,6 +127,9 @@ function draw(data) {
 
         const g = svg.append('g')
             .attr('transform', `translate(${margin.left},${margin.top})`);
+        var currentStartDate = new Date(currentdate);
+        var currentEndDate = new Date(currentdate);
+        currentEndDate.setDate(currentEndDate.getDate() + timeWindowSize);
         const xAxisG = g.append('g')
             .attr('transform', `translate(0, ${innerHeight})`);
         const yAxisG = g.append('g');
@@ -133,17 +139,27 @@ function draw(data) {
             .attr('x', innerWidth / 2)
             .attr('y', 100);
 
-        var linexScale = d3.scaleBand()
-                           .domain([0,1,2,3,4,5,6,7,8,9])
+        var linexScale = d3.scaleTime()
+                           .domain([currentStartDate, currentEndDate])
                            .range([0,500]);
         var lineyScale = d3.scaleBand()
-                           .domain([10,9,8,7,6,5,4,3,2,1])
+                           .domain([0,1,2,3,4,5,6,7,8,9])
                            .range([0,500]);
-        var lineyAxis = d3.axisLeft(lineyScale)
+        const lineyAxis = d3.axisLeft(lineyScale)
                           .ticks(9);
-        var linexAxis = d3.axisBottom(linexScale)
-                          .ticks(9);
-            g.append("g")
+        const linexAxis = d3.axisBottom(linexScale)
+                          .ticks(5).tickFormat(d3.timeFormat(timeFormat));
+        var line = d3.line()
+            //.curve(d3.curveMonotoneX)
+            .curve(d3.curveLinear)
+            .x(function (d) {
+                return linexScale(new Date(d.date)) - 550;
+            })
+            .y(function (d) {
+                return lineyScale(d.rank) + 20;
+            });
+
+        const linexAxisG = g.append("g")
                 .attr("transform","translate("+ (-550) +"," + 480 +")")
                 .call(linexAxis)
                 .style("fill","black");
@@ -260,7 +276,10 @@ function draw(data) {
 
             d3.transition("2")
                 .each(redraw)
-            lastData = currentData;
+                .on("end", d => {
+                    lastData = currentData;
+
+                });
 
         }
 
@@ -343,6 +362,10 @@ function draw(data) {
                 .data(currentData, function (d) {
                     return d.name;
                 });
+            var path = g.selectAll(".paths")
+                .data(currentData, function (d) {
+                    return d.name;
+                });
 
             if (showMessage) {
                 // 榜首文字
@@ -377,7 +400,136 @@ function draw(data) {
                     });
                 }
             }
+            var prevTotalLength = {};
+            function remeasureLength() {
+                g.selectAll(".linepath").call(function(element) {
+                    element.each(function(d) {
+                        prevTotalLength[d.name] = this.getTotalLength();
+                        //console.log(this.getTotalLength());
+                    });
+                });
+            }
+            remeasureLength();
+            // 超出窗口，窗口（折线图x轴）开始滑动
+            var newDate = new Date(currentdate);
+            if (currentEndDate < newDate)
+            {
+                currentEndDate = new Date(currentdate);
+                currentStartDate = new Date(currentdate);
+                currentStartDate.setDate(currentStartDate.getDate() - timeWindowSize);
+                //console.log(currentStartDate);
+                //console.log(currentEndDate);
+                // 修改比例尺
+                linexScale.domain([currentStartDate, currentEndDate])
+                    .range([0,500]);
+                // 删除超出范围的数据
+                for (let item in visibleData) {
+                    //console.log(visibleData[item][0]["date"]);
+                    while (visibleData[item].length > 0 && currentStartDate > new Date(visibleData[item][0]["date"])) {
+                        visibleData[item].shift();
+                        //console.log(1);
+                    }
+                }
+            }
 
+            // 顺序：
+            // update所有路径移动 => 重新计算update路径长度 延伸
+            // 坐标轴移动         =>
+            // 先update再enter，否则刚enter的元素会被再次放进update中
+
+
+            linexAxisG.transition("pathchange")
+                .duration(1500 * interval_time)
+                .ease(d3.easeLinear)
+                .call(linexAxis);
+            pUpdate();
+            pEnter();
+            pExit();
+            // 此处有bug：两个update都改了d属性（即绑定的数组），但是第二次修改应当在第一个transition结束之后进行，并且修改
+            function pUpdate() {
+                var pathUpdate = path.select(".linepath");
+                // 可能被截短
+                pathUpdate
+                    .attr("d", function (d, i) {
+                        return line(visibleData[d.name]);
+                    })
+                    .attr("stroke-dashoffset", function(d) {
+                        console.log(2);
+                        prevTotalLength[d.name] = this.getTotalLength();
+                        return 100000 - this.getTotalLength();
+                    });
+                // 变长
+                pathUpdate
+                    .attr("d", function (d, i) {
+                        //if (d.name == "I")
+                        //console.log(2);
+                        visibleData[d.name].push({date: currentdate, rank: i});
+                        return line(visibleData[d.name]);
+                    })
+                    .transition("2").duration(1000 * interval_time)
+                    .attr("stroke-dashoffset", function (d) {
+                        console.log(2);
+                        console.log(this.getTotalLength());
+                        return 100000 - this.getTotalLength();
+                    });
+            }
+
+            //console.log(pathUpdate.select(".linepath").getTotalLength());
+            function pEnter() {
+                var pathEnter = path.enter().append("g").attr("class", "paths");
+                pathEnter.append("path")
+                    .attr("stroke-dasharray", 100000)
+                    .attr("stroke-dashoffset", 100000)
+                    .attr("class", "linepath")
+                    .attr("d", function (d, i) {
+                        visibleData[d.name] = [];
+                        //if (d.name == "I")
+                        var prevDate = new Date(currentdate);
+                        prevDate.setDate(prevDate.getDate() - 1);
+                        console.log(prevDate);
+                        if (prevDate < currentStartDate) {
+                            prevDate = new Date(currentStartDate.getTime());
+                        }
+                        console.log(prevDate.toString());
+
+                        visibleData[d.name].push({date: prevDate.toString(), rank: max_number - 1});
+                        visibleData[d.name].push({date: currentdate, rank: i});
+                        //console.log(d);
+                        //console.log(i);
+                        return line(visibleData[d.name]);
+                    })
+                    .attr("stroke", d => getColor(d))
+                    .attr("stroke-width", 3)
+                    .attr("opacity", 0)
+                    .attr("fill", "none")
+                    .transition("2")
+                    .delay(1000 * interval_time)
+                    .duration(990 * interval_time)
+                    .attr("opacity", 1)
+                    .attr("stroke-dashoffset", function (d) {
+                        return 100000 - this.getTotalLength();
+                    });
+            }
+            // exit一定要记得remove空的DOM元素
+            function pExit() {
+                path.exit().select("path")
+                    .attr("d", function (d, i) {
+                        console.log(d);
+                        //if (d.name == "I")
+                        //console.log(3);
+                        visibleData[d.name].push({date: currentdate, rank: 9});
+                        return line(visibleData[d.name]);
+                    });
+                var pathExit = path.exit().transition()
+                    .duration(1000 * interval_time);
+
+                pathExit.select("path")
+                    .attr("opacity", 0)
+                    .attr("stroke-dashoffset", function (d) {
+                        return 100000 - this.getTotalLength();
+                    });
+                pathExit.remove();
+            }
 
             var barEnter = bar.enter().insert("g", ".axis")
                 .attr("class", "bar")
@@ -668,10 +820,13 @@ function draw(data) {
             }
 
         }, 3000 * interval_time);
-        setInterval(() => {
+        var inter2 = setInterval(() => {
 
             console.log(currentData);
             d3.transition()
                 .each(change)
+            if (i >= time.length) {
+                window.clearInterval(inter2);
+            }
         }, 3000 * update_rate * interval_time)
 }

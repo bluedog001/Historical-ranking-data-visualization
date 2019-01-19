@@ -553,7 +553,7 @@ function draw(data) {
                     .attr("fill", "none")
                     .transition("2")
                     .duration(1000 * interval_time)
-                    .attr("opacity", (d, i) => (i == 0) ? 1 : 0.3)
+                    .attr("opacity", (d, i) => (i == 0) ? 1 : 0.08)
                     .attr("stroke-dashoffset", function (d) {
                         return 100000 - this.getTotalLength();
                     });

@@ -22,13 +22,13 @@ body {
 
 .tick text {
     fill: #8E8883;
-    font-size: 12pt;
+    font-size: 1vw;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .label {
     fill: rgb(92, 92, 92);
-    font-size: 15pt;
+    font-size: 1vw;
     font-family: "Microsoft YaHei", "宋体";
     font-weight: bold
 }
@@ -37,7 +37,7 @@ body {
 
     fill: rgb(92, 92, 92);
     display: table-cell;
-    font-size: 40pt;
+    font-size: 2.5vw;
     font-weight: bold;
     font-family: 'Segoe UI', 'console', Calibri, sans-serif;
 }
@@ -62,14 +62,14 @@ body {
 .count {
     fill: rgb(92, 92, 92);
     font-weight: bold;
-    font-size: 20pt;
+    font-size: 1.8vw;
     font-family: 'Segoe UI', 'console', Calibri, sans-serif;
 }
 
 .topLabel {
     fill: rgb(92, 92, 92);
     font-weight: bold;
-    font-size: 30pt;
+    font-size: 1.8vw;
     font-family: 'Gill Sans', 'Gill Sans MT', "Calibri", 'Trebuchet MS', sans-serif;
 }
 
@@ -82,7 +82,7 @@ body {
 
 .value {
     fill: rgb(138, 46, 46);
-    font-size: 20pt;
+    font-size: 1.5vw;
     font-weight: 400;
     font-family: "Trebuchet MS";
 }
@@ -90,34 +90,34 @@ body {
 .barInfo {
     fill: rgb(255, 255, 255);
     font-weight: 800;
-    font-size: 24pt;
+    font-size: 1.8vw;
     font-family: '微软雅黑';
 }
 
 .axis-label {
     fill: #635F5D;
-    font-size: 32pt;
+    font-size: 15pt;
     font-family: sans-serif;
 }
 
 .days {
     fill: rgb(92, 92, 92);
     font-weight: bold;
-    font-size: 40pt;
+    font-size: 5pt;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
 .dayslabel {
     fill: rgb(92, 92, 92);
     font-weight: bold;
-    font-size: 25pt;
+    font-size: 10pt;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
 .growth {
     fill: rgb(92, 92, 92);
     font-weight: bold;
-    font-size: 40pt;
+    font-size: 1vw;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 

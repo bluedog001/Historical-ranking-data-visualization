@@ -152,8 +152,8 @@ function draw(data) {
     const margin = {
         left: 0.1 * width,
         right: 0.1 * width,
-        top: 0.1 * height,
-        bottom: 0.1 * height
+        top: 0.2 * height,
+        bottom: 0.2 * height
     };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
@@ -252,7 +252,7 @@ function draw(data) {
 
     var topLabel = g.insert("text")
         .attr("class", "topLabel")
-        .attr("x", item_x)
+        .attr("x", 0)
         .attr("y", text_y)
 
     function dataSort() {
@@ -337,10 +337,12 @@ function draw(data) {
             .attr("x", 0)
             .attr("y", text_y).text(itemLabel);
 
+        var title_y = - 0.2 * innerHeight;
+        var title_x = - Title.length*0.009*width;
         g.insert("text")
             .attr("class", "TITLE")
-            .attr("x", 100 - Title.length * 15)
-            .attr("y", -150).text(Title);
+            .attr("x", title_x)
+            .attr("y", title_y).text(Title);
 
         // 右1文字
         g.insert("text")
@@ -352,7 +354,7 @@ function draw(data) {
         if (use_counter == true) {
             var day = g.insert("text")
                 .attr("class", "count")
-                .attr("x", 0)
+                .attr("x", item_x)
                 .attr("y", text_y);
         }
         // 显示榜首type
@@ -528,7 +530,7 @@ function draw(data) {
                     return line(visibleData[d.name]);
                 })
                 .transition("2").duration(1000 * interval_time)
-                .attr("opacity", (d, i) => (i == 0) ? 1 : 0.08)
+                .attr("opacity", (d, i) => (i < 3) ? 1 : 0.16)
                 .attr("stroke-dashoffset", function (d) {
                     //console.log(2);
                     //console.log(this.getTotalLength());

@@ -38,18 +38,18 @@
     typeLabel: "",
     Title: "",
     // 榜首项目信息的水平位置 。
-    item_x: 800,
+    // item_x: 800,
 
     // 时间点间隔时间。
     interval_time: 1,
 
     // 上方文字水平高度。
-    text_y: -50,
-
-    // 右侧文字横坐标
-    text_x: 1000,
-    // 偏移量
-    offset: 300,
+    // text_y: -50,
+    //
+    // // 右侧文字横坐标
+    // text_x: 1000,
+    // // 偏移量
+    // offset: 300,
 
     // 长度小于display_barInfo的bar将不显示barInfo。
     display_barInfo: 200,
@@ -67,14 +67,14 @@
     format: ".0f",
 
     // 图表左右上下间距。
-    left_margin: 600,
-    right_margin: 80,
-    top_margin: 200,
-    bottom_margin: 200,
+    // left_margin: 50,
+    // right_margin: 100,
+    // top_margin: 200,
+    // bottom_margin: 200,
 
-    // 时间标签坐标。
-    dateLabel_x: 1440,
-    dateLabel_y: 750,
+    // // 时间标签坐标。
+    // dateLabel_x: 1440,
+    // dateLabel_y: 750,
 
     // 允许大于平均值的条消失时上浮。
     allow_up: false,

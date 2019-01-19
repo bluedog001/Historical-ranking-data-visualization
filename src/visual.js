@@ -107,7 +107,6 @@ function draw(data) {
     var showMessage = config.showMessage;
     var allow_up = config.allow_up;
     var interval_time = config.interval_time;
-    var text_y = config.text_y;
     var itemLabel = config.itemLabel;
     var typeLabel = config.typeLabel;
     var Title = config.Title;
@@ -130,18 +129,9 @@ function draw(data) {
     var top_margin = config.top_margin;
     var bottom_margin = config.bottom_margin;
     var timeFormat = config.timeFormat;
-    var item_x = config.item_x;
     var max_number = config.max_number;
     var reverse = config.reverse;
-    var text_x = config.text_x;
-    var offset = config.offset;
     var animation = config.animation;
-    const margin = {
-        left: left_margin,
-        right: right_margin,
-        top: top_margin,
-        bottom: bottom_margin
-    };
 
     var enter_from_0 = config.enter_from_0;
     // 时间窗口大小
@@ -151,21 +141,35 @@ function draw(data) {
     var currentdate = time[0].toString();
     var currentData = [];
     var visibleData = {};
-    var lastname;
     const svg = d3.select('svg');
 
-
-    const width = svg.attr('width');
-    const height = svg.attr('height');
+    // svg实际宽度
+    const width = $('svg').width();
+    //console.log(width);
+    // svg实际高度
+    const height = $('svg').height();
+    // 图表左右上下间距
+    const margin = {
+        left: 0.1 * width,
+        right: 0.1 * width,
+        top: 0.1 * height,
+        bottom: 0.1 * height
+    };
     const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom - 32;
-    var dateLabel_y = height - margin.top - margin.bottom - 32;
-    ;
+    const innerHeight = height - margin.top - margin.bottom;
+    var dateLabel_y = height - margin.top - margin.bottom;
+    var text_y = - 0.05 * innerHeight;
+    // 榜首项目信息的水平位置
+    var item_x = 0.3 * innerWidth;
+    // 右侧文字横坐标
+    var text_x = 0.4 * innerWidth;
+    // 偏移量
+    var offset = 0.1 * innerWidth;
     const xValue = d => Number(d.value);
     const yValue = d => d.name;
 
     const g = svg.append('g')
-        .attr('transform', `translate(${margin.left},${margin.top})`);
+        .attr('transform', `translate(${margin.left + 0.5 * innerWidth}, ${margin.top})`);
     var currentStartDate = new Date(currentdate);
     var currentEndDate = new Date(currentdate);
     currentEndDate.setDate(currentEndDate.getDate() + timeWindowSize);
@@ -180,30 +184,33 @@ function draw(data) {
 
     var linexScale = d3.scaleTime()
         .domain([currentStartDate, currentEndDate])
-        .range([0, 500]);
+        .range([0, 0.4 * innerWidth]);
     var lineyScale = d3.scaleBand()
-        .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        .range([0, 500]);
+        .domain([9, 8, 7, 6, 5, 4, 3, 2, 1, 0])
+        .range([innerHeight, 0])
+        .paddingInner(0.3)
+        .paddingOuter(0);
     const lineyAxis = d3.axisLeft(lineyScale)
-        .ticks(9);
+        .tickPadding(5)
+        .tickSize(-innerWidth * 0.45);
     const linexAxis = d3.axisBottom(linexScale)
         .ticks(5).tickFormat(d3.timeFormat(timeFormat));
     var line = d3.line()
     //.curve(d3.curveMonotoneX)
         .curve(d3.curveLinear)
         .x(function (d) {
-            return linexScale(new Date(d.date)) - 550;
+            return linexScale(new Date(d.date)) - 0.5 * innerWidth;
         })
         .y(function (d) {
-            return lineyScale(d.rank) + 20;
+            return 0.965 * innerHeight - lineyScale(9 - d.rank);
         });
 
     const linexAxisG = g.append("g")
-        .attr("transform", "translate(" + (-550) + "," + 480 + ")")
+        .attr("transform", `translate(${-0.5 * innerWidth}, ${innerHeight})`)
         .call(linexAxis)
         .style("fill", "black");
     g.append("g")
-        .attr("transform", "translate(" + (-550) + "," + 0 + ")")
+        .attr("transform", `translate(${-0.5 * innerWidth}, 0)`)
         .call(lineyAxis);
     var xScale = d3.scaleLinear()
     if (use_semilogarithmic_coordinate) {
@@ -236,7 +243,7 @@ function draw(data) {
     var dateLabel = g.insert("text")
         .data(currentdate)
         .attr("class", "dateLabel")
-        .attr("x", innerWidth)
+        .attr("x", innerWidth * 0.5)
         .attr("y", innerHeight).attr("text-anchor", function () {
             return 'end';
         })
@@ -352,8 +359,9 @@ function draw(data) {
         if (use_type_info == true) {
             var top_type = g.insert("text")
                 .attr("class", "days")
-                .attr("x", text_x - offset)
-                .attr("y", text_y);
+                .attr("x", 0)
+                .attr("y", text_y)
+                .attr("text-anchor", "end");
         }
     }
 
@@ -374,9 +382,9 @@ function draw(data) {
         // 如果所有数字很大导致拉不开差距
 
         if (big_value) {
-            xScale.domain([2 * d3.min(currentData, xValue) - d3.max(currentData, xValue), d3.max(currentData, xValue) + 10]).range([0, innerWidth]);
+            xScale.domain([2 * d3.min(currentData, xValue) - d3.max(currentData, xValue), d3.max(currentData, xValue) + 10]).range([0, innerWidth / 2]);
         } else {
-            xScale.domain([0, d3.max(currentData, xValue) + 1]).range([0, innerWidth]);
+            xScale.domain([0, d3.max(currentData, xValue) + 1]).range([0, innerWidth / 2]);
         }
         if (auto_sort) {
 
@@ -473,7 +481,7 @@ function draw(data) {
             //console.log(currentEndDate);
             // 修改比例尺
             linexScale.domain([currentStartDate, currentEndDate])
-                .range([0, 500]);
+                .range([0, innerWidth * 0.45]);
             // 删除超出范围的数据
             for (let item in visibleData) {
                 //console.log(visibleData[item][0]["date"]);
@@ -602,7 +610,7 @@ function draw(data) {
                     return xScale(currentData[currentData.length - 1].value);
                 }
             }).attr("fill-opacity", 0)
-            .attr("height", 26).attr("y", 50)
+            .attr("height", innerHeight / 18).attr("y", 50)
             .style("fill", d => getColor(d))
             .transition("a")
             .delay(500 * interval_time)

@@ -158,7 +158,7 @@ function draw(data) {
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     var dateLabel_y = height - margin.top - margin.bottom;
-    var text_y = - 0.05 * innerHeight;
+    var text_y = -0.05 * innerHeight;
     // 榜首项目信息的水平位置
     var item_x = 0.3 * innerWidth;
     // 右侧文字横坐标
@@ -195,14 +195,23 @@ function draw(data) {
         .tickSize(-innerWidth * 0.45);
     const linexAxis = d3.axisBottom(linexScale)
         .ticks(5).tickFormat(d3.timeFormat(timeFormat));
+
+    function lineX(dateStr) {
+        return linexScale(new Date(dateStr)) - 0.5 * innerWidth;
+    }
+
+    function lineY(rank) {
+        return innerHeight - lineyScale.bandwidth() / 2 - lineyScale(9 - rank);
+    }
+
     var line = d3.line()
     //.curve(d3.curveMonotoneX)
         .curve(d3.curveLinear)
         .x(function (d) {
-            return linexScale(new Date(d.date)) - 0.5 * innerWidth;
+            return lineX(d.date);
         })
         .y(function (d) {
-            return 0.965 * innerHeight - lineyScale(9 - d.rank);
+            return lineY(d.rank);
         });
 
     const linexAxisG = g.append("g")
@@ -337,8 +346,8 @@ function draw(data) {
             .attr("x", 0)
             .attr("y", text_y).text(itemLabel);
 
-        var title_y = - 0.2 * innerHeight;
-        var title_x = - Title.length*0.009*width;
+        var title_y = -0.2 * innerHeight;
+        var title_x = -Title.length * 0.009 * width;
         g.insert("text")
             .attr("class", "TITLE")
             .attr("x", title_x)
@@ -417,6 +426,10 @@ function draw(data) {
                 return d.name;
             });
         var path = g.selectAll(".paths")
+            .data(currentData, function (d) {
+                return d.name;
+            });
+        var connection = g.selectAll(".cnkts")
             .data(currentData, function (d) {
                 return d.name;
             });
@@ -529,13 +542,28 @@ function draw(data) {
                     visibleData[d.name].push({date: currentdate, rank: i});
                     return line(visibleData[d.name]);
                 })
-                .transition("2").duration(1000 * interval_time)
+                .transition("2").ease(d3.easeLinear).duration(2900 * interval_time)
                 .attr("opacity", (d, i) => (i < 3) ? 1 : 0.16)
                 .attr("stroke-dashoffset", function (d) {
                     //console.log(2);
                     //console.log(this.getTotalLength());
                     return 100000 - this.getTotalLength();
                 });
+            var cnktUpdate = connection.select(".linecnkt")
+                .attr("x1", function (d) {
+                    var prevDate = new Date(currentdate);
+                    prevDate.setDate(prevDate.getDate() - 1);
+                    //console.log(prevDate);
+                    if (prevDate < currentStartDate) {
+                        prevDate = new Date(currentStartDate.getTime());
+                    }
+                    return lineX(prevDate.toString());
+                })
+                .transition("2").ease(d3.easeLinear).duration(2900 * interval_time)
+                .attr("opacity", (d, i) => (i < 3) ? 1 : 0.16)
+                .attr("x1", lineX(currentdate))
+                .attr("y1", (d, i) => lineY(i))
+                .attr("y2", (d, i) => lineY(i))
         }
 
         //console.log(pathUpdate.select(".linepath").getTotalLength());
@@ -563,15 +591,42 @@ function draw(data) {
                     return line(visibleData[d.name]);
                 })
                 .attr("stroke", d => getColor(d))
-                .attr("stroke-width", 3)
+                .attr("stroke-width", 4)
                 .attr("opacity", 0)
                 .attr("fill", "none")
                 .transition("2")
-                .duration(1000 * interval_time)
-                .attr("opacity", (d, i) => (i == 0) ? 1 : 0.08)
+                .ease(d3.easeLinear)
+                .duration(2900 * interval_time)
+                .attr("opacity", (d, i) => (i == 0) ? 1 : 0.16)
                 .attr("stroke-dashoffset", function (d) {
                     return 100000 - this.getTotalLength();
                 });
+            var cnktEnter = connection.enter().append("g").attr("class", "cnkts");
+            cnktEnter.append("line")
+                .attr("class", "linecnkt")
+                .attr("x1", function (d) {
+                    var prevDate = new Date(currentdate);
+                    prevDate.setDate(prevDate.getDate() - 1);
+                    //console.log(prevDate);
+                    if (prevDate < currentStartDate) {
+                        prevDate = new Date(currentStartDate.getTime());
+                    }
+                    return lineX(prevDate.toString());
+                })
+                .attr("y1", lineY(max_number - 1))
+                .attr("x2", 0)
+                .attr("y2", lineY(max_number - 1))
+                .attr("stroke", d => getColor(d))
+                .attr("stroke-dasharray", innerWidth / 80)
+                .attr("stroke-width", 2)
+                .attr("opacity", 0)
+                .transition("2")
+                .ease(d3.easeLinear)
+                .duration(2900 * interval_time)
+                .attr("opacity", (d, i) => (i == 0) ? 1 : 0.16)
+                .attr("x1", lineX(currentdate))
+                .attr("y1", (d, i) => lineY(i))
+                .attr("y2", (d, i) => lineY(i));
         }
 
         // exit一定要记得remove空的DOM元素
@@ -587,8 +642,8 @@ function draw(data) {
                     visibleData[d.name].push({date: currentdate, rank: 9});
                     return line(visibleData[d.name]);
                 });
-            var pathExit = path.exit().transition()
-                .duration(1000 * interval_time);
+            var pathExit = path.exit().transition().ease(d3.easeLinear)
+                .duration(2500 * interval_time);
 
             pathExit.select("path")
                 .attr("opacity", 0)
@@ -596,6 +651,11 @@ function draw(data) {
                     return 100000 - this.getTotalLength();
                 });
             pathExit.remove();
+            var cnktExit = connection.exit().transition().ease(d3.easeLinear)
+                .duration(2500 * interval_time);
+            cnktExit.select("line")
+                .attr("opacity", 0)
+            cnktExit.remove();
         }
 
         var barEnter = bar.enter().insert("g", ".axis")
